@@ -5,16 +5,16 @@
     <title>Test</title>
 </head>
 <body>
-    <h1>Client 1</h1>
-    <h2>Send a Message</h2>
+    <h1>Клиент 1</h1>
+    <h2>Отправка сообщения</h2>
     <form id="messageForm">
-        <label for="text">Message Text (max 128 chars):</label><br>
+        <label for="text">Текст сообщения (от 1 до 128 символов):</label><br>
         <input type="text" id="text" maxlength="128" required><br><br>
 
-        <label for="order">Order Number:</label><br>
+        <label for="order">Порядковый номер:</label><br>
         <input type="number" id="order" required><br><br>
 
-        <button type="submit">Send Message</button>
+        <button type="submit">Отправить сообщение</button>
     </form>
 
     <p id="status"></p>
@@ -32,7 +32,7 @@
             };
 
             try {
-                const response = await fetch("https://localhost:5001/api/messages", {
+                const response = await fetch("http://localhost:5001/api/messages", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -51,7 +51,7 @@
         });
     </script>
 
-    <h1>Client 2</h1>
+    <h1>Клиент 2</h1>
     <h2>Сообщения в реальном времени</h2>
     <ul id="messages"></ul>
 
@@ -59,9 +59,12 @@
         let socket = new WebSocket("ws://localhost:5001/ws");
 
         socket.onmessage = function (event) {
-            let newMessage = document.createElement("li");
-            newMessage.textContent = event.data;
-            document.getElementById("messages").appendChild(newMessage);
+            let message = JSON.parse(event.data);
+            //console.log(event.data);
+            const li = document.createElement("li");
+            li.textContent = `#${message.Order}: ${message.Text} (${message.Timestamp})`;
+            document.getElementById("messages").appendChild(li);
+            
         };
 
         socket.onopen = function () {
@@ -77,9 +80,9 @@
         };
     </script>
 
-    <h1>Client 3</h1>
+    <h1>Клиент 3</h1>
     <h2>Сообщения за последние 10 минут</h2>
-    <button id="loadMessages">Load Messages</button>
+    <button id="loadMessages">Загрузить сообщения</button>
     <ul id="messageList"></ul>
 
     <script>
@@ -91,7 +94,7 @@
             const to = now.toISOString();
 
             try {
-                const response = await fetch(`https://localhost:5001/api/messages?from=${from}&to=${to}`);
+                const response = await fetch(`http://localhost:5001/api/messages?from=${from}&to=${to}`);
 
                 if (response.ok) {
                     const messages = await response.json();

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: message_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=MessageDb;Username=postgres;Password=123      
+    networks:
+      - message_net
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: message_db
+    restart: always
+    environment:
+      POSTGRES_DB: MessageDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db-data:/var/lib/postgresql/data
+    networks:
+      - message_net
+
+networks:
+  message_net:
+    driver: bridge
+
+volumes:
+  db-data:

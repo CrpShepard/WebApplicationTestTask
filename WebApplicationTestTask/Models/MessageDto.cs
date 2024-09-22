@@ -2,17 +2,18 @@
 {
     public class MessageDto
     {
+        private string? text;
         public string? Text
         {
             get
             {
-                return Text;
+                return text;
             }
             set
             {
                 if (value?.Length > 128)
                     throw new ArgumentException("Message length is larger than 128!");
-                Text = value;
+                text = value;
             }
         }
         public int Order { get; set; }

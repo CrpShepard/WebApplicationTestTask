@@ -12,10 +12,12 @@ namespace WebApplicationTestTask.Controllers
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly ILogger<MessageService> _logger;
 
-        public MessageService(IMessageRepository messageRepository)
+        public MessageService(IMessageRepository messageRepository, ILogger<MessageService> logger)
         {
             _messageRepository = messageRepository;
+            _logger = logger;
         }
 
         public async Task<Message> AddMessageAsync(MessageDto messageDto)
@@ -26,6 +28,9 @@ namespace WebApplicationTestTask.Controllers
                 Timestamp = DateTime.UtcNow,
                 Order = messageDto.Order
             };
+
+            _logger.LogInformation("Sending WebSocket broadcast message:{Order}, {Text}, {Timestamp}", message.Order, message.Text, message.Timestamp);
+            WebSocketHandler.BroadcastMessageAsync(message); // сразу отправка сообщения во все сокеты
 
             await _messageRepository.AddMessageAsync(message);
             return message;

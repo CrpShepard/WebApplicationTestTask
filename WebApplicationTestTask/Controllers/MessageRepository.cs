@@ -14,18 +14,28 @@ namespace WebApplicationTestTask.Controllers
     public class MessageRepository : IMessageRepository
     {
         private readonly string _connectionString;
+        private readonly ILogger<MessageRepository> _logger;
 
-        public MessageRepository(IConfiguration configuration)
+        public MessageRepository(IConfiguration configuration, ILogger<MessageRepository> logger)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _logger = logger;
         }
 
         public async Task AddMessageAsync(Message message)
         {
-            var sql = "INSERT INTO messages (text, timestamp, order) VALUES (@Text, @Timestamp, @Order)";
+            var sql = "INSERT INTO messages (text, timestamp, \"order\") VALUES (@Text, @Timestamp, @Order)";
             using (var connection = new NpgsqlConnection(_connectionString))
             {
-                await connection.ExecuteAsync(sql, message);
+                try
+                {
+                    _logger.LogInformation("Executing SQL:{sql}", sql);
+                    await connection.ExecuteAsync(sql, message);
+                }
+                catch 
+                {
+                    _logger.LogError("Error when executing SQL:{sql}", sql);
+                }
             }
         }
 
@@ -34,7 +44,16 @@ namespace WebApplicationTestTask.Controllers
             var sql = "SELECT * FROM messages WHERE timestamp BETWEEN @From AND @To ORDER BY timestamp";
             using (var connection = new NpgsqlConnection(_connectionString))
             {
-                return await connection.QueryAsync<Message>(sql, new { From = from, To = to });
+                try
+                {
+                    _logger.LogInformation("Executing SQL:{sql}", sql);
+                    return await connection.QueryAsync<Message>(sql, new { From = from, To = to });
+                }
+                catch
+                {
+                    _logger.LogError("Error when executing SQL:{sql}", sql);
+                    return Enumerable.Empty<Message>();
+                }
             }
         }
     }

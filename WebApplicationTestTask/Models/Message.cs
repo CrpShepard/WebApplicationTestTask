@@ -2,15 +2,16 @@
 {
     public class Message
     {
-        public int Id { get; set; }  
+        public int Id { get; set; }
+        private string? text;
         public string? Text {
             get {
-                return Text;
+                return text;
             }
             set {
                 if (value?.Length > 128)
                     throw new ArgumentException("Message length is larger than 128!");
-                Text = value;
+                text = value;
             } 
         } 
         public DateTime Timestamp { get; set; }
